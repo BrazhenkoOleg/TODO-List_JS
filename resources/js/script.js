@@ -1,4 +1,4 @@
-const taskList = [];
+let taskList = [];
 const taskContainer = document.getElementById('task-container');
 
 //TODO: add function checkTask, editTask, deleteTask 
@@ -6,7 +6,19 @@ const taskContainer = document.getElementById('task-container');
 const listenEvent = (e) => {
     //console.log(e.target.parentElement);
     const finderTask = taskList.find((task) => task._id == e.target.parentElement.id);
-    //if (e.target.)
+    switch (e.target.id) {
+        case 'check': 
+            checkTask(finderTask);
+            break;
+        case 'edit': 
+            editTask(finderTask);
+            break;
+        case 'delete': 
+            deleteTask(finderTask);
+            break;
+    }
+
+    console.log(taskList);
 }
 
 addTask = () => {
@@ -24,12 +36,16 @@ addTask = () => {
     const newCheckTask = document.createElement('input');
     setCheckAttribute(newCheckTask);
     
-    const newLabelTask = document.createElement('label');
-    newLabelTask.textContent = taskInput;
-    setLabelAttribute(newLabelTask);
+    const newSpanTask = document.createElement('span');
+    newSpanTask.textContent = taskInput;
+    setSpanAttribute(newSpanTask);
+
+    const newDeleteTask = document.createElement('button');
+    setDeleteAttribute(newDeleteTask);
 
     newTaskElement.appendChild(newCheckTask);
-    newTaskElement.appendChild(newLabelTask);
+    newTaskElement.appendChild(newSpanTask);
+    newTaskElement.appendChild(newDeleteTask);
     taskContainer.appendChild(newTaskElement);
 
     taskList.push(taskInfo); 
@@ -38,23 +54,41 @@ addTask = () => {
 
 //TODO: add checkTask function
 checkTask = (task) => {
-    task.checked = !task.checked;
+    task.isChecked = !task.isChecked;
 }
+
+editTask = (task) => {
+
+}
+
+deleteTask = (task) => {
+    const del_task = document.getElementById(`${task._id}`);
+    taskList = taskList.filter((tasks) => tasks !== task);
+    del_task.remove();
+} 
 
 setListAttribute = (list) => {
     list.setAttribute('class', 'list-group-item');
 }
 
 setCheckAttribute = (checkbox) => {
-    checkbox.setAttribute('id', 'checkbox');
+    checkbox.setAttribute('id', 'check');
     checkbox.setAttribute('class', 'form-check-input');
     checkbox.setAttribute('type', 'checkbox');
     checkbox.checked = false;
 }
 
-setLabelAttribute = (label) => {
-    label.setAttribute('id', 'label');
-    label.setAttribute('class', 'form-check-label');
+setSpanAttribute = (span) => {
+    span.setAttribute('id', 'edit');
+    span.setAttribute('class', 'form-check-label');
+}
+
+setDeleteAttribute = (button) => {
+    button.setAttribute('id', 'delete');
+    button.setAttribute('type', 'button');
+    button.setAttribute('class', 'btn btn-danger');
+    //button.setAttribute('onclick', 'deleteTask()');
+    button.textContent = 'Delete';
 }
 
 taskContainer.addEventListener('click', listenEvent);
