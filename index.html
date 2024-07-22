@@ -10,15 +10,16 @@
 <body>
     <h1>TODO List</h1>
     <form class="d-flex">
-      <input id="task-input" type="text" class="form-control me-2" placeholder="Add task" aria-label="Add task">
-      <button class="btn btn-outline-success" type="button" onclick="addTask()">+</button>
+      <input id="task-input" type="text" class="form-control me-2" placeholder="Add task" aria-label="Add task" />
+      <button class="btn btn-success" type="button" onclick="addTask()">+</button>
     </form>
     <br>
     <ul id="task-container" class="list-group">
         <!--<li class="list-group-item">
-          <input class="form-check-input me-1" type="checkbox" value="" id="firstCheckboxStretched">
-          <label class="form-check-label stretched-link" for="firstCheckboxStretched">First checkbox</label>
-          <button class="btn btn-outline-success" type="button" onclick="">X</button>
+          <input class="form-check-input" type="checkbox" />
+          <span class="form-check-label">First checkbox</span>
+          <input id="task-edit" type="text" class="form-control me-2" placeholder="Edit task" aria-label="Edit task" hidden />
+          <button type="button" class="btn btn-danger">Delete</button>
         </li>-->
       </ul>
       <script src="resources/js/script.js"></script>
