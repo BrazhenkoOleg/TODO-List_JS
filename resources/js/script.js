@@ -1,54 +1,55 @@
-let taskList = [];
-const taskInput = document.getElementById('task-input');
-const taskContainer = document.getElementById('task-container');
+const taskInput = document.querySelector('#task-input');
+const taskContainer = document.querySelector('#task-container');
+const addTaskButton = document.querySelector('#task-button');
 
-//TODO: add function checkTask, editTask, deleteTask 
-//and track this functions with Event Parent element id
+let taskList = [];
+
 const listenEvent = (e) => {
-    //console.log(e.target.parentElement);
-    
     const finderTask = taskList.find((task) => task._id == e.target.parentElement.id);
-    switch (e.target.id) {
+    console.log(e);
+    switch (e.target.getAttribute('name')) {
         case 'check': 
+            console.log('Check');
             checkTask(finderTask);
-            break;
-        case 'text': 
-            editTask(finderTask);
-            break;
+            break; 
         case 'delete': 
+            console.log('Delete');
             deleteTask(finderTask);
             break;
+        case 'text':
+            if (e.detail == 2) {
+                const textTask = e.target;
+                console.log(e.target.parentElement);
+                const inputTask = e.target.parentElement.querySelector('input[name="edit"]');
+                textTask.hidden = !textTask.hidden;
+                inputTask.hidden = !inputTask.hidden;
+                console.log("span: ", textTask);
+                console.log("input: ", inputTask);
+                inputTask.value = textTask.textContent;
+                inputTask.focus();
+                
+                inputTask.onkeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        textTask.hidden = !textTask.hidden;
+                        inputTask.hidden = !inputTask.hidden;
+                        textTask.textContent = inputTask.value;
+                        editTask(finderTask, inputTask.value);
+                    }
+                };
+                
+                inputTask.onblur = (e) => {
+                    textTask.hidden = !textTask.hidden;
+                    inputTask.hidden = !inputTask.hidden;
+                    textTask.textContent = inputTask.value;
+                    editTask(finderTask, inputTask.value);
+                }
+                //textTask.textContent = inputTask.value;
+                //editTask(finderTask, inputTask.value);
+            }
+            break;
     }
-
-    console.log(taskList);
 }
-
-/*getLayoutTodo = () => {
-    for (let i = 0; i < taskList.length; i++) {
-        const newTaskElement = document.createElement('li');
-        newTaskElement.setAttribute('id', taskList[i]._id);
-        setListAttribute(newTaskElement);
-    
-        const newCheckTask = document.createElement('input');
-        setCheckAttribute(newCheckTask);
-    
-        const newSpanTask = document.createElement('span');
-        newSpanTask.textContent = taskInput.value;
-        setSpanAttribute(newSpanTask);
-
-        const newEditTask = document.createElement('input');
-        setEditAttribute(newEditTask);
-
-        const newDeleteTask = document.createElement('button');
-        setDeleteAttribute(newDeleteTask);
-
-        newTaskElement.appendChild(newCheckTask);
-        newTaskElement.appendChild(newSpanTask);
-        newTaskElement.appendChild(newEditTask);
-        newTaskElement.appendChild(newDeleteTask);
-        taskContainer.appendChild(newTaskElement);
-    }
-}*/
 
 addTask = () => {
     const taskInfo = {
@@ -57,85 +58,49 @@ addTask = () => {
         isChecked: false
     };
 
-    const newTaskElement = document.createElement('li');
-    newTaskElement.setAttribute('id', taskList._id);
-    ыetListAttribute(newTaskElement);
-    
-    const newCheckTask = document.createElement('input');
-    setCheckAttribute(newCheckTask);
-    
-    const newSpanTask = document.createElement('span');
-    newSpanTask.textContent = taskInput.value;
-    setSpanAttribute(newSpanTask);
-
-    const newEditTask = document.createElement('input');
-    setEditAttribute(newEditTask);
-
-    const newDeleteTask = document.createElement('button');
-    setDeleteAttribute(newDeleteTask);
-
-    newTaskElement.appendChild(newCheckTask);
-    newTaskElement.appendChild(newSpanTask);
-    newTaskElement.appendChild(newEditTask);
-    newTaskElement.appendChild(newDeleteTask);
-    taskContainer.appendChild(newTaskElement);
-
-    //getLayoutTodo();
-
+    getLayoutTodo(taskInfo);
     taskList.push(taskInfo); 
-    //console.log(newTaskElement);
+    render(); 
 } 
 
-//TODO: add checkTask function
-checkTask = (task) => {
+const checkTask = (task) => {
     task.isChecked = !task.isChecked;
+    console.log(taskList);
+    render(); 
 }
 
-editTask = (task) => {
-    const edit_task = document.getElementById(`${task._id}`);
-
+const editTask = (task, text) => {
+    task.text = text;
+    render(); 
 }
 
-deleteTask = (task) => {
-    const del_task = document.getElementById(`${task._id}`);
+const deleteTask = (task) => {
     taskList = taskList.filter((tasks) => tasks !== task);
-    del_task.remove();
+    render(); 
 } 
 
-setListAttribute = (list) => {
-    list.setAttribute('class', 'list-group-item');
+    taskInput.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addTask();
+        }
+    };
+
+const getLayoutTodo = (task) => {
+    return taskContainer.innerHTML = 
+        `<li id='${task._id}' class='list-group-item'>
+            <input name='check' class='form-check-input' type='checkbox' ${task.isChecked ? 'checked' : ''} />
+            <span name='text' class='form-check-label' > ${task.text} </span>
+            <input name='edit' type='text' class='form-control me-2' hidden />
+            <button name='delete' type='button' class='btn btn-danger'> Delete </button>
+        </li>`;
 }
 
-setCheckAttribute = (checkbox) => {
-    //checkbox.setAttribute('id', 'check');
-    checkbox.setAttribute('class', 'form-check-input');
-    checkbox.setAttribute('type', 'checkbox');
-    checkbox.checked = false;
-}
-
-setSpanAttribute = (span) => {
-    //span.setAttribute('id', 'text');
-    span.setAttribute('class', 'form-check-label');
-}
-
-setEditAttribute = (input) => {
-    //input.setAttribute('id', 'edit');
-    input.hidden = true;
-}
-
-setDeleteAttribute = (button) => {
-    //button.setAttribute('id', 'delete');
-    button.setAttribute('type', 'button');
-    button.setAttribute('class', 'btn btn-danger');
-    //button.setAttribute('onclick', 'deleteTask()');
-    button.textContent = 'Delete';
-}
-
-taskInput.onkeydown = (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        addTask();
-    }
+const render = () => {
+    taskContainer.innerHTML = '';
+    taskList.forEach((task) => taskContainer.innerHTML += getLayoutTodo(task));
 };
 
+
+addTaskButton.addEventListener('click', addTask);
 taskContainer.addEventListener('click', listenEvent);
