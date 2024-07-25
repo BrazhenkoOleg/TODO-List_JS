@@ -3,9 +3,12 @@ const taskContainer = document.querySelector('#task-container');
 const addTaskButton = document.querySelector('#task-button');
 const checkAll = document.querySelector('#check-all');
 const deleteAllCheck = document.querySelector('#delete-all-check');
+const pageContainer = document.querySelector('#pages');
+
+const COUNT_ELEM = 5;
 
 let taskList = [];
-let currentPage = 2;
+let currentPage = 1;
 
 const listenEvent = (e) => {
     const finderTask = taskList.find((task) => task._id == e.target.parentElement.id);
@@ -49,6 +52,7 @@ const addTask = () => {
 
     getLayoutTodo(taskInfo);
     taskList.push(taskInfo); 
+    currentPageController('add');
     render(); 
 } 
 
@@ -79,12 +83,13 @@ const editTask = (task, text) => {
 
 const deleteTask = (task) => {
     taskList = taskList.filter((tasks) => tasks !== task);
+    currentPageController('delete');
     render(); 
 } 
 
 const deleteCheckTask = () => {
     taskList = taskList.filter((tasks) => !tasks.isChecked);
-
+    currentPageController('delete');
     render();
 }
 
@@ -98,17 +103,72 @@ const getLayoutTodo = (task) => {
         </li>`;
 }
 
+const getLayoutPage = (page) => {
+    return pageContainer.innerHTML = `<li class="page-item ${page == currentPage ? 'active' : ''} "><a class="page-link" href="#"> ${page} </a></li>`;
+}
+
 const paginationTask = (page) => {
-    const countElem = 5;
-    //const list = taskList.filter((task, index) => );
-    console.log(list);
+    let sliceList = taskList.slice((page - 1) * COUNT_ELEM, page * COUNT_ELEM );
+
+    return sliceList;
+}
+
+const currentPageController = (type) => {
+    let countPage = Math.ceil(taskList.length / COUNT_ELEM);
+    switch (type) {
+        case 'add': 
+            currentPage = countPage;
+            break;
+        case 'delete': 
+            if (currentPage > countPage) {
+                currentPage = countPage;
+            } 
+            break;
+    }
+}
+
+const renderTasks = (page) => {
+    taskContainer.innerHTML = '';
+    paginationTask(page).forEach((task) => taskContainer.innerHTML += getLayoutTodo(task));
+}
+
+const renderActiveCheckAll = () => {
+    if (taskList.length > 0) {
+        checkAll.disabled = false;
+        checkAll.checked = taskList.every((task) => task.isChecked === true);
+    } else {
+        checkAll.disabled = true;
+        checkAll.checked = false;
+    }
+}
+
+const renderActiveDeleteAll = () => deleteAllCheck.disabled = !taskList.some((task) => task.isChecked === true);
+
+const renderPagination = () => {
+    let countPage = Math.ceil(taskList.length / COUNT_ELEM);
+    pageContainer.innerHTML = '';
+    for (let i = 1; i <= countPage; i++) {
+        if (countPage > 1) {
+            pageContainer.innerHTML += getLayoutPage(i);
+        }
+    }
 }
 
 const render = () => {
+    renderPagination();
+    renderActiveCheckAll();
+    renderActiveDeleteAll();
+    renderTasks(currentPage);
+    /*const countPage = Math.floor((taskList.length + 1) / countElem);
     taskContainer.innerHTML = '';
-    taskList.forEach((task) => {
+
+    pageContainer.innerHTML = '';
+    //PREV: taskList
+    paginationTask(currentPage).forEach((task) => {
         taskContainer.innerHTML += getLayoutTodo(task);
     });
+
+    pageContainer.innerHTML += getLayoutPage(countPage);
 
     if (taskList.length > 0) {
         checkAll.disabled = false;
@@ -120,8 +180,7 @@ const render = () => {
 
     deleteAllCheck.disabled = !taskList.some((task) => task.isChecked === true);
 
-    console.log(checkAll.checked);
-    //paginationTask(currentPage);
+    console.log(checkAll.checked);*/
 }
 
 const addTaskEvent = (e) => {
@@ -171,6 +230,11 @@ const deleteAllCheckEvent = (e) => {
     }
 }
 
+const movePageEvent = (e) => {
+    currentPage = e.target.textContent;
+    render();
+}
+
 addTaskButton.addEventListener('click', addTask);
 taskInput.addEventListener('keydown', addTaskEvent);
 checkAll.addEventListener('click', checkAllEvent);
@@ -178,3 +242,4 @@ deleteAllCheck.addEventListener('click', deleteAllCheckEvent);
 taskContainer.addEventListener('click', listenEvent);
 taskContainer.addEventListener('keydown', keyTaskEvent);
 taskContainer.addEventListener('blur', blurTaskEvent, true);
+pageContainer.addEventListener('click', movePageEvent);
