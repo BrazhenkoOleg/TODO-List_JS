@@ -52,18 +52,20 @@ const listenEvent = (e) => {
 
 const addTask = () => {
     //validation task
-
-    const taskInfo = {
-        _id: Date.now(),
-        text: taskInput.value,
-        isChecked: false
-    };
-
-    filterType = 'all';
-    getLayoutTodo(taskInfo);
-    taskList.push(taskInfo); 
-    currentPageController('add');
-    render(); 
+    const validText = checkInputTask(taskInput.value);
+    if (validText) {
+        const taskInfo = {
+            _id: Date.now(),
+            text: validText,
+            isChecked: false
+        };
+    
+        filterType = 'all';
+        getLayoutTodo(taskInfo);
+        taskList.push(taskInfo); 
+        currentPageController('add');
+        render(); 
+    } 
 } 
 
 const checkTask = (task) => {
@@ -82,7 +84,7 @@ const findTaskEdit = (target) => {
     const inputTask = target.nextElementSibling;
     inputTask.hidden = false;
     textTask.hidden = true;
-    inputTask.value = textTask.textContent;
+    inputTask.value = textTask.textContent.trim();
     inputTask.focus();
     checkInputTask(inputTask.value);
 }
@@ -106,11 +108,12 @@ const deleteCheckTask = () => {
 
 
 const checkInputTask = (input) => {
-    if (!(/^\S{3,}$/.test(input))) {
-        return false;
+    const regex = /^(?=.*[\p{L}])[\p{L}\p{N}\s.,!?-]+$/u;
+    if (regex.test(input)) {
+        return input.replace(/\s+/g, ' ').trim();
     } 
     else {
-        return true;
+        return false;
     }
 }
 
@@ -119,10 +122,7 @@ const renderLayoutFilter = () => {
     filterContainer.innerHTML = '';
     for (const [id, text] of Object.entries(FILTER_TASKS)){
         filterContainer.innerHTML += 
-            `<button id=${id} type="button" class="btn ${id === 'all' ? 
-                'btn-danger' : id === 'active' ? 
-                'btn-warning' : id === 'complited' ? 
-                'btn-success' : '' } ${filterType === id ? 'active' : ''}">${text} <span class="badge text-bg-primary rounded-pill"> ${currentFilter(id).length} </span></button>`
+            `<button id=${id} type="button" class="btn ${getClassButton(id)} ${filterType === id ? 'active' : ''}">${text} <span class="badge text-bg-primary rounded-pill"> ${currentFilter(id).length} </span></button>`
     }
 
     return filterContainer.innerHTML;
@@ -130,6 +130,17 @@ const renderLayoutFilter = () => {
     //`<button id=${filter[0]} type="button" class="btn btn-danger ${filterType === filter[0] ? 'active' : ''}">${filter[1]} <span class="badge text-bg-primary rounded-pill"> ${taskList.length} </span></button>
     //<button id=${filter[0]} type="button" class="btn btn-warning ${filterType === filter[0] ? 'active' : ''}">${filter[1]} <span class="badge text-bg-primary rounded-pill"> ${taskList.filter((task) => !task.isChecked).length} </span></button>
     //<button id=${filter[0]} type="button" class="btn btn-success ${filterType === filter[0] ? 'active' : ''}">${filter[1]} <span class="badge text-bg-primary rounded-pill"> ${taskList.filter((task) => task.isChecked).length} </span></button>`;
+}
+
+const getClassButton = (id) => {
+    switch (id) {
+        case 'all':
+            return 'btn-danger';
+        case 'active':
+            return 'btn-warning';
+        case 'complited':
+            return 'btn-success';
+    }
 }
 
 const getLayoutTodo = (task) => {
@@ -253,9 +264,7 @@ const render = () => {
 const addTaskEvent = (e) => {
     if (e.key === 'Enter') {
         e.preventDefault();
-        if (checkInputTask(e.target.value)) {
-            addTask();
-        }
+        addTask();
     }
 }
 
@@ -263,17 +272,18 @@ const keyTaskEvent = (e) => {
     const finderTask = taskList.find((task) => task._id == e.target.parentElement.id);
     const inputTask = e.target;
     const textTask = e.target.previousElementSibling;
+    const validText = checkInputTask(inputTask.value);
     if (e.sourceCapabilities !== null && e.key === 'Enter') {
         //console.log(e);
         e.preventDefault();
         textTask.hidden = false;
         inputTask.hidden = true;
-        //if (checkInputTask(inputTask.value)) {
-        //    textTask.textContent = inputTask.value;
-        //    editTask(finderTask, inputTask.value);
-        //}
-        textTask.textContent = inputTask.value;
-        editTask(finderTask, inputTask.value);
+        if (validText) {
+            textTask.textContent = validText;
+            editTask(finderTask, validText);
+        }
+        //textTask.textContent = inputTask.value;
+        //editTask(finderTask, inputTask.value);
     }
 }
 
@@ -281,16 +291,16 @@ const blurTaskEvent = (e) => {
     const finderTask = taskList.find((task) => task._id == e.target.parentElement.id);
     const inputTask = e.target;
     const textTask = e.target.previousElementSibling;
+    const validText = checkInputTask(inputTask.value);
     if (e.sourceCapabilities !== null){
         textTask.hidden = false;
         inputTask.hidden = true;
+        if (validText) {
+            textTask.textContent = validText;
+            editTask(finderTask, validText);
+        }
         //textTask.textContent = inputTask.value;
-        //if (checkInputTask(inputTask.value)) {
-        //    textTask.textContent = inputTask.value;
-        //    editTask(finderTask, inputTask.value);
-        //}
-        textTask.textContent = inputTask.value;
-        editTask(finderTask, inputTask.value);
+        //editTask(finderTask, inputTask.value);
     }
 }
 
