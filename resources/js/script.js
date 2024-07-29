@@ -7,10 +7,39 @@ const pageContainer = document.querySelector('#pages');
 const filterContainer = document.querySelector('#filter');
 
 const COUNT_ELEM = 5;
+const DOUBLE_CLICK = 2;
+const ADD_KEY = 'Enter';
+const TASK_CONTENT = {
+  text: 'text',
+  delete: 'delete',
+  check: 'check',
+};
 const FILTER_TASKS = {
   all: 'All',
   active: 'Active',
   complited: 'Complited',
+};
+const ACTIONS_TASK = {
+  add: 'add',
+  delete: 'delete',
+};
+const CLASS_BUTTONS = {
+  all: 'btn-danger',
+  active: 'btn-warning',
+  complited: 'btn-success',
+};
+const ACTIVE_BUTTON = {
+  active: 'active',
+  deactivate: '',
+};
+const ACTIVE_CHECKED = {
+  checked: 'checked',
+  not_checked: '',
+};
+const EVENT_ID = {
+  delete: 'delete-all-check',
+  check: 'check-all',
+  move: 'page',
 };
 
 let taskList = [];
@@ -43,55 +72,42 @@ const checkInputTask = (input) => {
 
 const currentFilter = (type) => {
   switch (type) {
-    case 'active':
+    case FILTER_TASKS.active.toLowerCase():
       return taskList.filter((task) => !task.isChecked);
-    case 'complited':
+    case FILTER_TASKS.complited.toLowerCase():
       return taskList.filter((task) => task.isChecked);
-    case 'all':
+    default:
       return taskList;
-    // no default
   }
-  return taskList;
 };
 
-const filterTask = (type) => {
-  filterType = type;
-  return currentFilter(filterType);
-};
-
-const currentPageController = (type) => {
+const currentPageController = (action) => {
   const countPage = Math.ceil(taskList.length / COUNT_ELEM);
-  switch (type) {
-    case 'add':
-      currentPage = countPage;
-      break;
-    case 'delete':
-      if (currentPage > countPage) {
-        currentPage = countPage;
-      }
-      break;
-    // no default
+  if (action === ACTIONS_TASK.add) {
+    currentPage = countPage;
+  } else if (currentPage > countPage && action === ACTIONS_TASK.delete) {
+    currentPage = countPage;
   }
 };
 
 const getClassButton = (id) => {
   switch (id) {
-    case 'all':
-      return 'btn-danger';
-    case 'active':
-      return 'btn-warning';
-    case 'complited':
-      return 'btn-success';
-    // no default
+    case FILTER_TASKS.all.toLowerCase():
+      return CLASS_BUTTONS.all;
+    case FILTER_TASKS.active.toLowerCase():
+      return CLASS_BUTTONS.active;
+    case FILTER_TASKS.complited.toLowerCase():
+      return CLASS_BUTTONS.complited;
+    default:
+      return '';
   }
-  return '';
 };
 
 // Render Functions
 const renderLayoutFilter = () => {
   filterContainer.innerHTML = '';
   Object.entries(FILTER_TASKS).forEach(([id, text]) => {
-    filterContainer.innerHTML += `<button id=${id} type="button" class="btn ${getClassButton(id)} ${filterType === id ? 'active' : ''}">
+    filterContainer.innerHTML += `<button id=${id} type="button" class="btn ${getClassButton(id)} ${filterType === id ? ACTIVE_BUTTON.active : ACTIVE_BUTTON.deactivate}">
                                     ${text} <span class="badge text-bg-primary rounded-pill"> 
                                     ${currentFilter(id).length} </span>
                                 </button>`;
@@ -101,7 +117,7 @@ const renderLayoutFilter = () => {
 
 const getLayoutTodo = (task) => {
   taskContainer.innerHTML = `<li id='${task.id}' class='list-group-item list-group-item-action d-flex align-items-center'>
-                                <input name='check' class='form-check-input mr-2' type='checkbox' ${task.isChecked ? 'checked' : ''}/>
+                                <input name='check' class='form-check-input mr-2' type='checkbox' ${task.isChecked ? ACTIVE_CHECKED.checked : ACTIVE_CHECKED.not_checked}/> 
                                 <span name='text' class='form-check-label ml-2 flex-grow-1 px-3'> ${task.text} </span>
                                 <input name='edit' type='text' class='form-control flex-grow-1 mx-3 rounded-0' value='' hidden />
                                 <button name='delete' type='button' class='btn ${getClassButton(filterType)} ml-2'> Delete </button>
@@ -110,27 +126,27 @@ const getLayoutTodo = (task) => {
 };
 
 const getLayoutPage = (page) => {
-  pageContainer.innerHTML = `<li class="page-item ${page === currentPage ? 'active' : ''} "><a name="page" class="page-link" href="#"> ${page} </a></li>`;
+  pageContainer.innerHTML = `<li class="page-item ${page === currentPage ? ACTIVE_BUTTON.active : ACTIVE_BUTTON.deactivate} "><a name="page" class="page-link" href="#"> ${page} </a></li>`; // add var active
   return pageContainer.innerHTML;
 };
 
 const paginationTask = () => {
   const startIndex = (currentPage - 1) * COUNT_ELEM;
   const endIndex = currentPage * COUNT_ELEM;
-  return filterTask(filterType).slice(startIndex, endIndex);
+  return currentFilter(filterType).slice(startIndex, endIndex);
 };
 
 const renderTasks = () => {
   taskContainer.innerHTML = '';
-  paginationTask(filterTask(filterType)).forEach((task) => {
+  paginationTask(currentFilter(filterType)).forEach((task) => {
     taskContainer.innerHTML += getLayoutTodo(task);
   });
 };
 
 const renderActiveCheckAll = () => {
-  if (filterTask(filterType).length > 0) {
+  if (currentFilter(filterType).length) {
     checkAll.disabled = false;
-    checkAll.checked = filterTask(filterType).every((task) => task.isChecked === true);
+    checkAll.checked = currentFilter(filterType).every((task) => task.isChecked);
   } else {
     checkAll.disabled = true;
     checkAll.checked = false;
@@ -138,11 +154,11 @@ const renderActiveCheckAll = () => {
 };
 
 const renderActiveDeleteAll = () => {
-  deleteAllCheck.disabled = !filterTask(filterType).some((task) => task.isChecked === true);
+  deleteAllCheck.disabled = !currentFilter(filterType).some((task) => task.isChecked);
 };
 
 const renderPagination = () => {
-  const countPage = Math.ceil(filterTask(filterType).length / COUNT_ELEM);
+  const countPage = Math.ceil(currentFilter(filterType).length / COUNT_ELEM);
   pageContainer.innerHTML = '';
   for (let i = 1; i <= countPage; i += 1) {
     if (countPage > 1) {
@@ -168,10 +184,10 @@ const addTask = () => {
       text: validText,
       isChecked: false,
     };
-    filterType = 'all';
+    filterType = FILTER_TASKS.all.toLowerCase();
     getLayoutTodo(taskInfo);
     taskList.push(taskInfo);
-    currentPageController('add');
+    currentPageController(ACTIONS_TASK.add);
     render();
   }
 };
@@ -199,56 +215,52 @@ const findTaskEdit = (target) => {
   checkInputTask(inputTask.value);
 };
 
-const editTask = (task, text) => {
-  task.text = text;
-  render();
-};
-
 const deleteTask = (task) => {
   taskList = taskList.filter((tasks) => tasks !== task);
-  currentPageController('delete');
+  currentPageController(ACTIONS_TASK.delete);
   render();
 };
 
 const deleteCheckTask = () => {
   taskList = taskList.filter((tasks) => !tasks.isChecked);
-  currentPageController('delete');
+  currentPageController(ACTIONS_TASK.delete);
   render();
 };
 
 // Events
 const listenEvent = (e) => {
-  const finderTask = taskList.find((task) => task.id.toString() === e.target.parentElement.id);
-  if (e.target.getAttribute('name') === 'check') checkTask(finderTask);
-  if (e.target.getAttribute('name') === 'delete') deleteTask(finderTask);
-  if (e.target.getAttribute('name') === 'text' && e.detail === 2) findTaskEdit(e.target);
+  const finderTask = taskList.find((task) => task.id === Number(e.target.parentElement.id));
+  if (e.target.getAttribute('name') === TASK_CONTENT.check) checkTask(finderTask);
+  if (e.target.getAttribute('name') === TASK_CONTENT.delete) deleteTask(finderTask);
+  if (e.target.getAttribute('name') === TASK_CONTENT.text && e.detail === DOUBLE_CLICK) findTaskEdit(e.target);
 };
 
 const addTaskEvent = (e) => {
-  if (e.key === 'Enter') {
+  if (e.key === ADD_KEY) {
     e.preventDefault();
     addTask();
   }
 };
 
 const keyTaskEvent = (e) => {
-  const finderTask = taskList.find((task) => task.id.toString() === e.target.parentElement.id);
+  const finderTask = taskList.find((task) => task.id === Number(e.target.parentElement.id));
   const inputTask = e.target;
   const textTask = e.target.previousElementSibling;
   const validText = checkInputTask(inputTask.value);
-  if (e.sourceCapabilities !== null && e.key === 'Enter') {
+  if (e.sourceCapabilities !== null && e.key === ADD_KEY) {
     e.preventDefault();
     textTask.hidden = false;
     inputTask.hidden = true;
     if (validText) {
       textTask.textContent = validText;
-      editTask(finderTask, validText);
+      finderTask.text = validText;
+      render();
     }
   }
 };
 
 const blurTaskEvent = (e) => {
-  const finderTask = taskList.find((task) => task.id.toString() === e.target.parentElement.id);
+  const finderTask = taskList.find((task) => task.id === Number(e.target.parentElement.id));
   const inputTask = e.target;
   const textTask = e.target.previousElementSibling;
   const validText = checkInputTask(inputTask.value);
@@ -257,28 +269,27 @@ const blurTaskEvent = (e) => {
     inputTask.hidden = true;
     if (validText) {
       textTask.textContent = validText;
-      editTask(finderTask, validText);
+      finderTask.text = validText;
+      render();
     }
   }
 };
 
 const checkAllEvent = (e) => {
   const checkboxTask = e.target;
-  if (checkboxTask.id === 'check-all') {
+  if (checkboxTask.id === EVENT_ID.check) {
     checkAllTask(checkboxTask.checked);
   }
 };
 
 const deleteAllCheckEvent = (e) => {
   const deleteCheck = e.target;
-  if (deleteCheck.id === 'delete-all-check') {
-    deleteCheckTask();
-  }
+  if (deleteCheck.id === EVENT_ID.delete) deleteCheckTask();
 };
 
 const movePageEvent = (e) => {
-  if (e.target.getAttribute('name') === 'page') {
-    currentPage = parseInt(e.target.textContent, 10);
+  if (e.target.getAttribute('name') === EVENT_ID.move) {
+    currentPage = Number(e.target.textContent);
     render();
   }
 };
@@ -286,7 +297,8 @@ const movePageEvent = (e) => {
 const filterEvent = (e) => {
   const type = e.target.getAttribute('id');
   currentPage = 1;
-  filterTask(type);
+  filterType = type;
+  currentFilter(filterType);
   render();
 };
 
