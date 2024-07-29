@@ -20,29 +20,6 @@ let filterType = 'all';
 const listenEvent = (e) => {
     const finderTask = taskList.find((task) => task._id == e.target.parentElement.id);
 
-    /*switch (e.target.getAttribute('name')) {
-        case 'check': 
-            console.log('Check');
-            checkTask(finderTask);
-            break; 
-        case 'delete': 
-            console.log('Delete');
-            deleteTask(finderTask);
-            break;
-        case 'text':
-            if (e.detail == 2) {
-                const textTask = e.target;
-                const inputTask = e.target.nextElementSibling;
-                inputTask.hidden = false;
-                textTask.hidden = true;
-                console.log("span: \n", textTask);
-                console.log("input: \n", inputTask);
-                inputTask.value = textTask.textContent;
-                inputTask.focus();
-            }
-            break;
-    }*/
-
     if (e.target.getAttribute('name') === 'check') checkTask(finderTask);
 
     if (e.target.getAttribute('name') === 'delete') deleteTask(finderTask);
@@ -51,7 +28,6 @@ const listenEvent = (e) => {
 }
 
 const addTask = () => {
-    //validation task
     const validText = checkInputTask(taskInput.value);
     if (validText) {
         const taskInfo = {
@@ -70,7 +46,6 @@ const addTask = () => {
 
 const checkTask = (task) => {
     task.isChecked = !task.isChecked;
-    //console.log(taskList);
     render(); 
 }
 
@@ -144,10 +119,6 @@ const renderLayoutFilter = () => {
     }
 
     return filterContainer.innerHTML;
-    //return filterContainer.innerHTML += 
-    //`<button id=${filter[0]} type="button" class="btn btn-danger ${filterType === filter[0] ? 'active' : ''}">${filter[1]} <span class="badge text-bg-primary rounded-pill"> ${taskList.length} </span></button>
-    //<button id=${filter[0]} type="button" class="btn btn-warning ${filterType === filter[0] ? 'active' : ''}">${filter[1]} <span class="badge text-bg-primary rounded-pill"> ${taskList.filter((task) => !task.isChecked).length} </span></button>
-    //<button id=${filter[0]} type="button" class="btn btn-success ${filterType === filter[0] ? 'active' : ''}">${filter[1]} <span class="badge text-bg-primary rounded-pill"> ${taskList.filter((task) => task.isChecked).length} </span></button>`;
 }
 
 const getClassButton = (id) => {
@@ -255,28 +226,6 @@ const render = () => {
     renderActiveCheckAll();
     renderActiveDeleteAll();
     renderTasks();
-    /*const countPage = Math.floor((taskList.length + 1) / countElem);
-    taskContainer.innerHTML = '';
-
-    pageContainer.innerHTML = '';
-    //PREV: taskList
-    paginationTask(currentPage).forEach((task) => {
-        taskContainer.innerHTML += getLayoutTodo(task);
-    });
-
-    pageContainer.innerHTML += getLayoutPage(countPage);
-
-    if (taskList.length > 0) {
-        checkAll.disabled = false;
-        checkAll.checked = taskList.every((task) => task.isChecked === true);
-    } else {
-        checkAll.disabled = true;
-        checkAll.checked = false;
-    }
-
-    deleteAllCheck.disabled = !taskList.some((task) => task.isChecked === true);
-
-    console.log(checkAll.checked);*/
 }
 
 const addTaskEvent = (e) => {
@@ -300,8 +249,6 @@ const keyTaskEvent = (e) => {
             textTask.textContent = validText;
             editTask(finderTask, validText);
         }
-        //textTask.textContent = inputTask.value;
-        //editTask(finderTask, inputTask.value);
     }
 }
 
@@ -317,8 +264,6 @@ const blurTaskEvent = (e) => {
             textTask.textContent = validText;
             editTask(finderTask, validText);
         }
-        //textTask.textContent = inputTask.value;
-        //editTask(finderTask, inputTask.value);
     }
 }
 
