@@ -108,12 +108,30 @@ const deleteCheckTask = () => {
 
 
 const checkInputTask = (input) => {
-    const regex = /^(?=.*[\p{L}])[\p{L}\p{N}\s.,!?-]+$/u;
-    if (regex.test(input)) {
-        return input.replace(/\s+/g, ' ').trim();
-    } 
+    const regex = /[\p{L}]/u;
+
+    const escapeMap = {
+        '"': '&quot;',
+        '№': '&numero;',
+        '%': '&percnt;',
+        ':': '&colon;',
+        '?': '&quest;',
+        '*': '&ast;',
+        "'": '&apos;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '&': '&amp;',
+    };
+
+    const validInput = input
+        .replace(/\s+/g, ' ').trim() 
+        .replace(/[""№%:?*'<>&"]/g, char => escapeMap[char]); 
+
+    if (!regex.test(input)) {
+        return false; 
+    }
     else {
-        return false;
+        return validInput;
     }
 }
 
@@ -145,11 +163,11 @@ const getClassButton = (id) => {
 
 const getLayoutTodo = (task) => {
     return taskContainer.innerHTML = 
-        `<li id='${task._id}' class='list-group-item list-group-item-action'>
-            <input name='check' class='form-check-input' type='checkbox' ${task.isChecked ? 'checked' : ''} />
-            <span name='text' class='form-check-label' > ${task.text} </span>
-            <input name='edit' type='text' class='form-control' value='' hidden />
-            <button name='delete' type='button' class='btn btn-danger'> Delete </button>
+        `<li id='${task._id}' class='list-group-item list-group-item-action d-flex align-items-center'>
+            <input name='check' class='form-check-input mr-2' type='checkbox' ${task.isChecked ? 'checked' : ''}/>
+            <span name='text' class='form-check-label ml-2 flex-grow-1 px-3'> ${task.text} </span>
+            <input name='edit' type='text' class='form-control flex-grow-1 mx-3 rounded-0' value='' hidden />
+            <button name='delete' type='button' class='btn ${getClassButton(filterType)} ml-2'> Delete </button>
         </li>`;
 }
 
